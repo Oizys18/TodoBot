@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext
 from .models import Todo
+from . import telegrambot
 
 
 # Create your views here.
@@ -10,7 +11,6 @@ def index(request):
         'todos':todos,
     }
     return render(request,'todos/index.html',context)
-    
 
 def create(request):
     # POST일 때 
@@ -32,6 +32,8 @@ def update(request, pk):
         todo.title = title
         todo.due_date = due_date
         todo.save()
+        # 텔레그램 알림
+        telegrambot.send(title, due_date)
         return redirect('todos:index')
     else:
         context={
