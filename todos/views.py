@@ -2,19 +2,8 @@ from django.shortcuts import render, redirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from .models import Todo
+from . import telegrambot
 
-def handler404(request, *args, **argv):
-    response = render_to_response('404.html', {},
-                                  context_instance=RequestContext(request))
-    response.status_code = 404
-    return response
-
-
-def handler500(request, *args, **argv):
-    response = render_to_response('500.html', {},
-                                  context_instance=RequestContext(request))
-    response.status_code = 500
-    return response
 
 # Create your views here.
 def index(request):
@@ -24,9 +13,6 @@ def index(request):
     }
     return render(request,'todos/index.html',context)
 
-# def new(request):
-#     print(request.method)
-    
 
 def create(request):
     # POST일 때 
@@ -40,11 +26,7 @@ def create(request):
         return render(request,'todos/create.html')
     
 
-# def edit(request, pk):
-    
-
 def update(request, pk):
-    # todo = get
     todo = Todo.objects.get(id=pk)
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -52,9 +34,10 @@ def update(request, pk):
         todo.title = title
         todo.due_date = due_date
         todo.save()
+        # 텔레그램 알림
+        telegrambot.send(title, due_date)
         return redirect('todos:index')
     else:
-        # print(request.method)
         context={
             'todo': todo,
         }
